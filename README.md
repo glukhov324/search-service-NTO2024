@@ -52,18 +52,18 @@ $env:PYTHONPATH = $pwd  - windows
 export PYTHONPATH=$PYTHONPATH:$PWD   - linux/macOS
 
 
-Download folders from https://drive.google.com/drive/folders/1NWGmIqbgzb2MQ9ad3PBifPaqbAaSR598?usp=sharing
+Скачайте все папки из https://drive.google.com/drive/folders/1NWGmIqbgzb2MQ9ad3PBifPaqbAaSR598?usp=sharing
 
-1. put files from predictor to src/predictor   
-2. put files from cv_model to src/cv_model
-3. move folder data to root of project
-4. put files from cv_model_train to src/cv_model_train
+1. Положите файлы из скачанной папки predictor в src/predictor   
+2. Положите файлы из скачанной папки cv_model в src/cv_model
+3. Переместите скачанную папку data в корень проекта
+4. Положите файлы из скачанной папки cv_model_train to src/cv_model_train
 
-3 and 4 points are optional
+3 и 4 пункты необязательны
 
-3 - for building and cleaning source dataset again
+3 - для дальнейшего создания единого датасета из исходных данных
 
-4 - for training cv model again
+4 - для обучения cv-модели
 
 
 
@@ -77,7 +77,6 @@ linux/macOS:
 1. source venv/bin/activate
 2. export PYTHONPATH=$PYTHONPATH:$PWD
 
-to start uvicorn server: python -m uvicorn app:app --reload
+3. python -m uvicorn app:app --reload
 
-
-In demo_test_service.ipynb you can see an example of how the service works
+В demo_test_service.ipynb находится демонстрация работы сервиса
