@@ -1,8 +1,8 @@
 class Config:
     df_path = 'data'
-    del_imgs_pth ='plots_deleted_images'
+    del_imgs_pth ='/plots_deleted_images'
     dataset_name ='dataset'
-    dataset_main_folder = 'src/dataset_prepare'
+    dataset_main_folder = './dataset_prepare'
     cv_model_wts_path = 'src/cv_model/best_wts_cat_names.pt'
     ind2name_path = 'src/cv_model/ind2name.pkl'
     ind2cat_path = 'src/cv_model/ind2cat.pkl'

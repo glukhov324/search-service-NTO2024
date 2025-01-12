@@ -30,18 +30,16 @@ __Installation guide__:
 windows:
 1. py -3.10 -m venv venv
 2. .\venv\Scripts\activate
+3. $env:PYTHONPATH = $pwd
 
 linux/macOS
 1. python3.10 -m venv venv
 2. source venv/bin/activate
+3. export PYTHONPATH=$PYTHONPATH:$PWD
 
-python -m pip install --upgrade pip
-
-pip install -r .\requirements.txt
-pip install git+https://github.com/openai/CLIP.git
-
-$env:PYTHONPATH = $pwd  - windows
-export PYTHONPATH=$PYTHONPATH:$PWD   - linux/macOS
+4. python -m pip install --upgrade pip
+5. pip install -r .\requirements.txt
+6. pip install git+https://github.com/openai/CLIP.git
 
 
 Скачайте все папки по ссылке https://drive.google.com/drive/folders/1NWGmIqbgzb2MQ9ad3PBifPaqbAaSR598?usp=sharing
