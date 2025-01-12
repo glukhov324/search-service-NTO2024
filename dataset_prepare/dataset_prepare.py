@@ -59,7 +59,6 @@ class DatasetPrepare:
             self.dataset = pd.concat((self.dataset, df_temp), axis=0)
 
         self.dataset = self.dataset.drop_duplicates()
-        self.dataset = self.dataset[:1000]
         self.dataset = self.dataset.reset_index(drop=True)
 
         logger.info("Dataset was created!")
