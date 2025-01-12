@@ -1,6 +1,6 @@
 import pandas as pd
 import torch
-import ruclip
+import clip
 from tqdm import tqdm
 import PIL
 import io
@@ -13,6 +13,11 @@ from config.config import Config
 
 
 def base64_to_pil_image(image_base64: str) -> PIL.Image:
+
+    """
+    Конвертация изображения, закодированного в base64, в PIL.Image
+    """
+
     return PIL.Image.open(io.BytesIO(base64.decodebytes(bytes(image_base64, "utf-8")))).convert('RGB')
 
 
@@ -29,7 +34,7 @@ class DatasetPrepare:
         self.dataset_name = dataset_name
         self.dataset = pd.DataFrame()
         self.device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
-        self.clip, self.processor = ruclip.load('ruclip-vit-base-patch32-384', device=self.device)
+        self.model_clip, self.processor = clip.load("ViT-B/32", device=self.device)
     
 
 
@@ -54,21 +59,27 @@ class DatasetPrepare:
             self.dataset = pd.concat((self.dataset, df_temp), axis=0)
 
         self.dataset = self.dataset.drop_duplicates()
+        self.dataset = self.dataset[:1000]
         self.dataset = self.dataset.reset_index(drop=True)
 
         logger.info("Dataset was created!")
 
 
 
-    def _save_figure_deleted_images(self, img_score: dict) -> None:
+    def _save_figure_deleted_images(self, score_img: dict) -> None:
+
         """
-        Визуализация восьми удалённых изображений из датасета, имеющих наибольшую близость к запросу для удаления 
+        Сохранение восьми сэмплов удалённых изображений из датасета, имеющих наибольшую вероятность соответствия ключевому запросу для удаления
+
+        Входные параметры:
+            score_img (dict): словарь вида key: (prob, pil_img), key - индекс удалённой строки из датасета, 
+            prob - вероятность соответствия изображения из удалённой строки ключевому запросу для удаления
         """
 
         if not os.path.exists(f"{self.dataset_main_folder}/{self.del_imgs_pth}"):
             os.mkdir(f"{self.dataset_main_folder}/{self.del_imgs_pth}")
 
-        short_imgs_list = [t[1][1] for t in sorted(img_score.items(), key=lambda x:(x[1][0]), reverse=True)][:8]
+        short_imgs_list = [t[1][1] for t in sorted(score_img.items(), key=lambda x:(x[1][0]), reverse=True)][:8]
 
         plt.figure(figsize=(16, 8))
 
@@ -82,40 +93,40 @@ class DatasetPrepare:
             plt.savefig(f"{self.dataset_main_folder}/{self.del_imgs_pth}/plot_{name}.png")
 
 
-
+    @torch.inference_mode()
     def clean_dataset(self,
                       texts: list[str],
-                      threshold: float = 0.9) -> tuple[list, dict]:
+                      threshold: float = 0.9) -> None:
         
         """
-        Очистка датасета при помощи модели ruclup.
-        Удаляем изображения из датасета, которые похожи с текстом на нулевом индексе в списке texts более, чем на threshold
+        Очистка датасета при помощи модели clip
+        Удаляем строки из датасета, если изображения в этих строках похожи с текстом на нулевом индексе (ключевым запросом для удаления) 
+        в списке texts более, чем на threshold
+
+        Входные параметры:
+            texts (list[str]): список запросов
+            threshold (float): порог удаления строки из датасета по нулевому запросу из texts
         """
         
         ids_to_delete = []
-        img_score = {}
+        score_img = {}
 
         logger.info(f"Dataset cleaning was started by query: {texts[0]}")
 
         for i in tqdm(range(len(self.dataset))):
 
-            img = base64_to_pil_image(self.dataset.iloc[i]['image'])
-            p = self.processor(text=texts, 
-                    images=[img],
-                    return_tensors='pt',
-                    device=self.device)
-            
-            texts_encoded = p['input_ids'].to(self.device)
-            images_encoded = p['pixel_values'].to(self.device)
+            pil_img = base64_to_pil_image(self.dataset.iloc[i]['image'])
+            prepoc_img = self.processor(pil_img).unsqueeze(0).to(self.device)
+            tokenized_texts = clip.tokenize(texts).to(self.device)
 
-            logits_per_image, _ = self.clip(texts_encoded, images_encoded)
+            logits_per_image, _ = self.model_clip(prepoc_img, tokenized_texts)
             probs = logits_per_image.softmax(dim=-1).detach().cpu().numpy()
 
             if probs[0][0] > threshold:
                 ids_to_delete.append(i)
-                img_score[i] = probs[0][0], img
+                score_img[i] = (probs[0][0], pil_img)
         
-        self._save_figure_deleted_images(img_score=img_score)
+        self._save_figure_deleted_images(score_img=score_img)
 
         self.dataset = self.dataset.drop(ids_to_delete, axis=0)
         self.dataset = self.dataset.reset_index(drop=True)
@@ -123,7 +134,7 @@ class DatasetPrepare:
         logger.info(f"Dataset cleaning was ended by query: {texts[0]}")
 
 
-    def save_dataset(self):
+    def save_dataset(self) -> None:
 
         """
         Сохранение текущей версии датасета
@@ -133,15 +144,14 @@ class DatasetPrepare:
 
 if __name__ == "__main__":
 
-    dp = DatasetPrepare()
     dp = DatasetPrepare(df_path=Config.df_path,
                         del_imgs_pth=Config.del_imgs_pth,
                         dataset_name=Config.dataset_name,
                         dataset_main_folder=Config.dataset_main_folder)
         
     dp.create_dataset()
-    dp.clean_dataset(texts=['чёрно-белое', 'разноцветное изображение'], 
+    dp.clean_dataset(texts=['black and white image', 'multi-colored image'], 
                     threshold=0.9)
-    dp.clean_dataset(texts=['коллаж из нескольких фотографий', 'одна фотография'], 
+    dp.clean_dataset(texts=['collage of several images', 'one single image'], 
                     threshold=0.9)
     dp.save_dataset()

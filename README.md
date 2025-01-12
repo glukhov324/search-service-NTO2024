@@ -2,7 +2,7 @@
 
 Данные предоставлены для Екатеринбурга, Нижнего Новгорода, Владимира, Ярославля
 
-Исходный датасет был соединён в один из датасетов для Екатеринбурга, Нижнего Новгорода, Владимира, Ярославля и частично очищен от чёрно-белых изображений и изображений-коллажей при помощи модели ruclip 
+Исходный датасет был соединён в один из датасетов для Екатеринбурга, Нижнего Новгорода, Владимира, Ярославля и частично очищен от чёрно-белых изображений и изображений-коллажей при помощи модели clip 
 
 ### Какие задачи решает сервис?
 
@@ -21,12 +21,11 @@
 для ранжирования названий из датасета относительно входящего текстового описания достопримечательности, для топ-5 наиболее подходящих названий из датасета
 выдаются изображения, соответствующие этим названиям
 
+python version - 3.10
 
 
 
-python version is 3.10
-
-__installation guide__:
+__Installation guide__:
 
 windows:
 1. py -3.10 -m venv venv
@@ -36,30 +35,23 @@ linux/macOS
 1. python3.10 -m venv venv
 2. source venv/bin/activate
 
-python -m pip install pip==23.0.1
-
-pip install cython==3.0.11
+python -m pip install --upgrade pip
 
 pip install -r .\requirements.txt
-
-pip install transformers==4.47.1
-
-pip install huggingface_hub==0.25.0
-
-pip install sentence_transformers==3.3.1
+pip install git+https://github.com/openai/CLIP.git
 
 $env:PYTHONPATH = $pwd  - windows
 export PYTHONPATH=$PYTHONPATH:$PWD   - linux/macOS
 
 
-Скачайте все папки из https://drive.google.com/drive/folders/1NWGmIqbgzb2MQ9ad3PBifPaqbAaSR598?usp=sharing
+Скачайте все папки по ссылке https://drive.google.com/drive/folders/1NWGmIqbgzb2MQ9ad3PBifPaqbAaSR598?usp=sharing
 
 1. Положите файлы из скачанной папки predictor в src/predictor   
 2. Положите файлы из скачанной папки cv_model в src/cv_model
 3. Переместите скачанную папку data в корень проекта
 4. Положите файлы из скачанной папки cv_model_train to src/cv_model_train
 
-3 и 4 пункты необязательны
+3 и 4 пункты необязательны для выполнения, если вы просто хотите протестировать сервис
 
 3 - для дальнейшего создания единого датасета из исходных данных
 

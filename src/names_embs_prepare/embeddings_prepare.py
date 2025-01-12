@@ -50,4 +50,4 @@ if __name__ == "__main__":
                                      df_embs["City"].values, 
                                      df_embs["Name_embedding"].values))
 
-    logger.info("Base of names and names' embeddings was created!")
+    logger.info("Base of names' embeddings was created!")
