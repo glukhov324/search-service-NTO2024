@@ -31,15 +31,18 @@ windows:
 1. py -3.10 -m venv venv
 2. .\venv\Scripts\activate
 3. $env:PYTHONPATH = $pwd
+4. python -m pip install --upgrade pip
+5. pip install -r .\requirements.txt
+6. pip install git+https://github.com/openai/CLIP.git
 
 linux/macOS
 1. python3.10 -m venv venv
 2. source venv/bin/activate
 3. export PYTHONPATH=$PYTHONPATH:$PWD
-
 4. python -m pip install --upgrade pip
 5. pip install -r .\requirements.txt
 6. pip install git+https://github.com/openai/CLIP.git
+
 
 
 Скачайте все папки по ссылке https://drive.google.com/drive/folders/1NWGmIqbgzb2MQ9ad3PBifPaqbAaSR598?usp=sharing
@@ -47,26 +50,30 @@ linux/macOS
 1. Положите файлы из скачанной папки predictor в src/predictor   
 2. Положите файлы из скачанной папки cv_model в src/cv_model
 3. Переместите скачанную папку data в корень проекта
-4. Положите файлы из скачанной папки cv_model_train to src/cv_model_train
+4. Положите файлы из скачанной папки cv_model_train to cv_model_train
 
-3 и 4 пункты необязательны для выполнения, если вы просто хотите протестировать сервис
+3 и 4 пункты необязательны для выполнения, если вы просто хотите протестировать сервис. 4 шаг необходим, если вы хотите
+получить единый очищенный датасет из исходных данных. 5 шаг необходим, если вы хотите обучить cv-модель
 
-3 - для дальнейшего создания единого датасета из исходных данных
+Если вы хотите заново получить очищенный датасет и эмбеддинги названий достопримечательностей:
 
-4 - для обучения cv-модели
+* чтобы получить единый очищенный датасет из исходных данных: python dataset_prepare\dataset_prepare.py
+
+* чтобы получить эмбеддинги названий достопримечательностей: python names_embs_prepare\embeddings_prepare.py
 
 
 
 __Start guide__:
 
+Перед запуском сервиса выполните все шаги по установке библиотек и скачиванию необходимых файлов
+
 windows:
 1. .\venv\Scripts\activate
-2. $env:PYTHONPATH = $pwd
+2. python -m uvicorn app:app --reload
 
 linux/macOS:
 1. source venv/bin/activate
-2. export PYTHONPATH=$PYTHONPATH:$PWD
+2. python -m uvicorn app:app --reload
 
-3. python -m uvicorn app:app --reload
 
 В demo_test_service.ipynb находится демонстрация работы сервиса
