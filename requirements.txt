@@ -1,7 +1,7 @@
-torch==2.0.0+cu118 
-torchvision==0.15.1+cu118
-torchaudio==2.0.1 
---extra-index-url https://download.pytorch.org/whl/cu118
+torch==1.13.1+cu116 
+torchvision==0.14.1+cu116 
+torchaudio==0.13.1 
+--extra-index-url https://download.pytorch.org/whl/cu116
 numpy==1.26.4
 scikit-learn==1.6.0
 pandas==2.2.3
@@ -14,6 +14,8 @@ python-multipart==0.0.20
 faiss-cpu==1.9.0.post1
 requests==2.32.3
 sentence_transformers==3.3.1
+tokenizers==0.20.3 
+transformers==4.45.2
 ftfy==6.3.1
 regex==2024.11.6
 tqdm==4.67.1
