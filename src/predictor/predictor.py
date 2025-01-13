@@ -102,9 +102,7 @@ class Predictor:
         faiss.normalize_L2(vectors)
         index.add(vectors)
 
-        text_embedding = self.rubert.encode(text)
-
-        _vector = np.array([text_embedding])
+        _vector = np.array([self.rubert.encode(text)])
         faiss.normalize_L2(_vector)
 
         distances, ann = index.search(_vector, k=index.ntotal)

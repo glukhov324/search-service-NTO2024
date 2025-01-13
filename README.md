@@ -25,7 +25,7 @@ python version - 3.10
 
 
 
-# Скачайте все папки по ссылке https://drive.google.com/drive/folders/1NWGmIqbgzb2MQ9ad3PBifPaqbAaSR598?usp=sharing
+## Скачайте всё содержимое [этой](https://drive.google.com/drive/folders/1NWGmIqbgzb2MQ9ad3PBifPaqbAaSR598?usp=sharing) директории гугл диска 
 
 1. Положите файлы из скачанной папки predictor в src/predictor   
 2. Положите файлы из скачанной папки cv_model в src/cv_model
@@ -37,7 +37,7 @@ python version - 3.10
 
 
 
-# __Fast start with docker__:
+## __Fast start with docker__:
 
 Убедитесь, что вы выполнили пункты 1 и 2 из предыдущего шага
 
@@ -46,12 +46,12 @@ docker build -t nto:v1 .
 docker run -p 8000:8000 --gpus=all nto:v1
 ```
 
-http://0.0.0.0:8000/
+документация сервиса будет доступна [здесь](http://0.0.0.0:8000/docs)
 
 В demo_test_service.ipynb находится демонстрация работы сервиса
 
 
-# __Installation guide__:
+## __Installation guide__:
 
 ```sh
 python3.10 -m venv venv
@@ -72,11 +72,13 @@ pip install git+https://github.com/openai/CLIP.git
 
 
 
-# __Start guide without docker__:
+## __Start guide without docker__:
 
 Перед запуском сервиса выполните все шаги по установке библиотек и скачиванию необходимых файлов
 
-1. source venv/bin/activate
-2. python -m uvicorn app:app --reload
+```sh
+source venv/bin/activate
+python -m uvicorn app:app --reload
+```
 
-http://0.0.0.0:8000/
+документация сервиса будет доступна [здесь](http://0.0.0.0:8000/docs)
