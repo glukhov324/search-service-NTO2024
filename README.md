@@ -41,33 +41,26 @@ python version - 3.10
 
 Убедитесь, что вы выполнили пункты 1 и 2 из предыдущего шага
 
-1. docker build -t nto:v1 .
-2. docker run -p 8000:8000 --gpus=all nto:v1
+```sh
+docker build -t nto:v1 .
+docker run -p 8000:8000 --gpus=all nto:v1
+```
 
-http://127.0.0.1:8000/ - windows
-
-http://0.0.0.0:8000/ - linux
+http://0.0.0.0:8000/
 
 В demo_test_service.ipynb находится демонстрация работы сервиса
 
 
 # __Installation guide__:
 
-windows:
-1. py -3.10 -m venv venv
-2. .\venv\Scripts\activate
-3. $env:PYTHONPATH = $pwd
-4. python -m pip install --upgrade pip
-5. pip install -r .\requirements.txt
-6. pip install git+https://github.com/openai/CLIP.git
-
-linux:
-1. python3.10 -m venv venv
-2. source venv/bin/activate
-3. export PYTHONPATH=$PYTHONPATH:$PWD
-4. python -m pip install --upgrade pip
-5. pip install -r .\requirements.txt
-6. pip install git+https://github.com/openai/CLIP.git
+```sh
+python3.10 -m venv venv
+source venv/bin/activate
+export PYTHONPATH=$PYTHONPATH:$PWD
+python -m pip install --upgrade pip
+pip install -r .\requirements.txt
+pip install git+https://github.com/openai/CLIP.git
+```
 
 
 Если вы хотите заново получить очищенный датасет и эмбеддинги названий достопримечательностей 
@@ -83,14 +76,7 @@ linux:
 
 Перед запуском сервиса выполните все шаги по установке библиотек и скачиванию необходимых файлов
 
-windows:
-1. .\venv\Scripts\activate
-2. python -m uvicorn app:app --reload
-
-linux:
 1. source venv/bin/activate
 2. python -m uvicorn app:app --reload
 
-http://127.0.0.1:8000/ - windows
-
-http://0.0.0.0:8000/ - linux
+http://0.0.0.0:8000/
