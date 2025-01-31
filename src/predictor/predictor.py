@@ -44,23 +44,27 @@ class Predictor:
                 "Name_embedding": embs
             })
         except:
-            raise Exception("Base of names and names' embeddings does not exist or incorrect. Please, run src/names_embs_prepare/embeddings_prepare.py")
+            raise Exception("Отсутствуют подготовленные эмбеддинги названий достопримечательностей. Пожалуйста, запустите скрипт src/names_embs_prepare/embeddings_prepare.py")
 
     @torch.inference_mode()
     def topk_cats_names_by_image(self,
                                  image: Image,
-                                 k: int = 5) -> dict:
+                                 city: str,
+                                 k: int = 5) -> tuple[dict, list[dict]]:
         
         '''
         Возвращает логиты и индексы для топ-k категорий, для названий возвращает логиты и индексы в порядке убывания веротностей
 
-        Параметры:
+        Параметры: 
             image (PIL.Image): изображение, отправленное пользователем
+            city (str): город, в котором нужно искать достопримечательность
             k (int): количество наиболее подходящих категорий изображения для выдачи
 
         Возвращаемое значение:
-            словарь длины k вида <категория достопримечательности: вероятность того, что категория подходит изображению пользователя>
+            словарь длины k вида <категория достопримечательности: вероятность того, что категория подходит изображению пользователя
         '''
+        temp_base = self.name_emb_base[self.name_emb_base.City == city]
+        c_pl_names = temp_base["Name"].unique().tolist()
         
         processed_image = data_transforms(image).unsqueeze(0).to(self.device)
         cats_logits, names_logits = self.cv_model(processed_image)
@@ -68,12 +72,14 @@ class Predictor:
         out_topk_cats = cats_logits.topk(k=k)
         out_topk_names = names_logits.topk(k=len(self.ind2name))
 
-        return {
-            "topk_cats_logits": out_topk_cats.values.cpu(),
-            "topk_cats_indices": out_topk_cats.indices.cpu(),
-            "topk_names_logits": out_topk_names.values.cpu(),
-            "topk_names_indices": out_topk_names.indices.cpu()
-        }
+        cats_probs = out_topk_cats.values.softmax(dim=-1).cpu().tolist()[0]
+        cats = [self.ind2cat[int(i)] for i in out_topk_cats.indices.cpu()[0]]
+        cats_resp = {cats[i]: cats_probs[i] for i in range(len(cats))}
+
+        names = [self.ind2name[int(i)] for i in out_topk_names.indices.cpu()[0] if self.ind2name[int(i)] in c_pl_names][:k]
+        names_resp = [{"Place_name": name, "Lon": self.base[self.base.Name == name]['Lon'].values[0], "Lat": self.base[self.base.Name == name]['Lat'].values[0]} for name in names]
+
+        return (cats_resp, names_resp)
     
 
     def topk_names_by_text(self,
@@ -102,10 +108,10 @@ class Predictor:
         faiss.normalize_L2(vectors)
         index.add(vectors)
 
-        _vector = np.array([self.rubert.encode(text)])
-        faiss.normalize_L2(_vector)
+        vector = np.array([self.rubert.encode(text)])
+        faiss.normalize_L2(vector)
 
-        distances, ann = index.search(_vector, k=index.ntotal)
+        distances, ann = index.search(vector, k=index.ntotal)
         results = pd.DataFrame({'distances': distances[0], 'ann': ann[0]})
         merged = pd.merge(results, temp_base, left_on='ann', right_index=True)
 

@@ -41,34 +41,7 @@ async def image_predict(image_file: UploadFile,
         data = await image_file.read()
         pil_image = Image.open(io.BytesIO(data)).convert('RGB')
 
-        cv_response = predictor.topk_cats_names_by_image(image=pil_image)
-        cats_logits, cats_indices = cv_response["topk_cats_logits"], cv_response["topk_cats_indices"]
-        _, names_indices = cv_response["topk_names_logits"], cv_response["topk_names_indices"]
-
-        cats_probs = cats_logits.softmax(dim=-1).cpu().tolist()[0]
-        cats = [predictor.ind2cat[int(i)] for i in cats_indices[0]]
-
-        names = [predictor.ind2name[int(i)] for i in names_indices[0]]
-
-        names_resp = []
-        find = 0
-        i = 0
-        # гарантируется, что в Екатеринбурге, Нижнем Новгороде, Владимире и Ярославле есть хотя бы 5 достопримечательностей
-        while find != 5:
-                try:
-                        lon = predictor.base[(predictor.base.City == city) & (predictor.base.Name == names[i])]['Lon'].values[0]
-                        lat = predictor.base[(predictor.base.City == city) & (predictor.base.Name == names[i])]['Lat'].values[0]
-                        names_resp.append({
-                                "Place_name": names[i],
-                                "Lon": lon,
-                                "Lat": lat
-                        })
-                        find += 1
-                        i += 1
-                except:
-                        i += 1
-
-        cats_resp = {cats[i]: cats_probs[i] for i in range(len(cats))}
+        cats_resp, names_resp = predictor.topk_cats_names_by_image(image=pil_image, city=city)
 
         return (cats_resp, names_resp)
 
