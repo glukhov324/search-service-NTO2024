@@ -56,7 +56,7 @@ class Predictor:
     def topk_cats_names_by_image(self,
                                  image: PIL.Image,
                                  city: str,
-                                 k: int = 5) -> tuple[dict, list[dict]]:
+                                 k: int = settings.TOPK) -> tuple[dict, list[dict]]:
         '''
         Нахождение по входящему изображению распределения вероятностей на top-k категорий достопримечательностей, 
         top-k названий наиболее похожих достопримечательностей с их координатами
@@ -93,7 +93,7 @@ class Predictor:
     def topk_images_by_text(self,
                             text: str,
                             city: str,
-                            k: int = 5) -> dict:
+                            k: int = settings.TOPK) -> dict:
         '''
         Нахождение top-k наиболее соответствующих изображений достопримечательностей на входящий текстовый запрос
 

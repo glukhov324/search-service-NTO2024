@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     DEVICE: torch.device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
     USE_CITIES: List[str] = ["Екатеринбург", "Нижний Новгород", "Владимир", "Ярославль"]
     DEFAULT_CITY: str = "Нижний Новгород"
+    TOPK: int = 5
 
 
 settings = Settings()

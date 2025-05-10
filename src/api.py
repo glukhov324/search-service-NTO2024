@@ -36,7 +36,6 @@ def text_predict(text: str,
                                     content={"message": f"Указанного города нет в списке: {settings.USE_CITIES}"})
         
         images_names_dict = predictor.topk_images_by_text(text=text,
-                                                          city=city,
-                                                          k=5)
+                                                          city=city)
 
         return images_names_dict
