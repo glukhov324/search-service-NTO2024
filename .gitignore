@@ -1,7 +1,4 @@
 *.csv
-*.pt
-*.npy
-*.pkl
 venv/
 __pycache__/
 webServerApiSettings.json

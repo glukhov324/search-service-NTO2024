@@ -23,12 +23,12 @@ class Settings(BaseSettings):
     # names embeddings settings
     EMBEDDINGS_MODEL_NAME: str = "cointegrated/rubert-tiny2"
     SEARCH_BASE_PATH: str = 'src/predictor/train_val.csv'
-    NAMES_EMBEDDINGS_PATH: str = 'src/predictor/names_embeddings.npy'
+    NAMES_EMBEDDINGS_PATH: str = 'src/names_embeddings/names_embeddings.npy'
 
     # cv model
-    CV_MODEL_WTS_PATH: str = 'src/cv_model/best_wts_cat_names.pt'
-    IND2NAME_DECODER_PATH: str = 'src/cv_model/ind2name.pkl'
-    IND2CAT_DECODER_PATH: str = 'src/cv_model/ind2cat.pkl'
+    CV_MODEL_WTS_PATH: str = 'src/cv_model/model_wts/best_wts_cat_names.pt'
+    IND2NAME_DECODER_PATH: str = 'src/cv_model/class_decoders/ind2name.pkl'
+    IND2CAT_DECODER_PATH: str = 'src/cv_model/class_decoders/ind2cat.pkl'
 
     # Logging settings
     LOG_FORMAT: str = f"%(asctime)s - [%(levelname)s] - %(name)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s"

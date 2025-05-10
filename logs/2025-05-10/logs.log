@@ -1,0 +1,2 @@
+2025-05-10 21:39:06,106 - [INFO] - sentence_transformers.SentenceTransformer - (SentenceTransformer.py).__init__(218) - Load pretrained SentenceTransformer: cointegrated/rubert-tiny2
+2025-05-10 21:40:59,419 - [INFO] - sentence_transformers.SentenceTransformer - (SentenceTransformer.py).__init__(218) - Load pretrained SentenceTransformer: cointegrated/rubert-tiny2

@@ -5,11 +5,14 @@ import faiss
 import pandas as pd
 import numpy as np
 import PIL
+import os
 from sentence_transformers import SentenceTransformer
 
 from src.cv_model.model import Model
 from src.cv_model.data_transforms import data_transforms
 from src.settings import settings
+from src.names_embeddings.embeddings_prepare import get_names_embeddings
+
 
 
 
@@ -37,15 +40,17 @@ class Predictor:
         self.rubert = SentenceTransformer(settings.EMBEDDINGS_MODEL_NAME,
                                           device=settings.DEVICE)
 
-        try:
-            names, cities, embs = np.load(names_embs_path, allow_pickle=True)
-            self.name_emb_base = pd.DataFrame({
+        if not os.path.exists(names_embs_path):
+            get_names_embeddings(search_base=self.search_base,
+                                 model=self.rubert)
+            
+        names, cities, embs = np.load(names_embs_path, allow_pickle=True)
+        self.name_emb_base = pd.DataFrame({
                 "Name": names,
                 "City": cities,
                 "Name_embedding": embs
             })
-        except:
-            raise Exception("Отсутствуют подготовленные эмбеддинги названий достопримечательностей. Пожалуйста, запустите скрипт src/names_embs_prepare/embeddings_prepare.py")
+
 
     @torch.inference_mode()
     def topk_cats_names_by_image(self,
@@ -121,6 +126,8 @@ class Predictor:
                                     predictor.search_base[predictor.search_base.Name == name].iloc[0]['Lat']) for name in names_list}
 
         return images_names_dict
+
+
 
 predictor = Predictor(cv_model_wts_path=settings.CV_MODEL_WTS_PATH,
                       ind2name_decoder_path=settings.IND2NAME_DECODER_PATH,
