@@ -1,8 +1,10 @@
+import PIL.Image
 import torch
 import pickle
 import faiss
 import pandas as pd
 import numpy as np
+import PIL
 from PIL import Image
 from sentence_transformers import SentenceTransformer
 
@@ -20,20 +22,20 @@ class Predictor:
                  path_to_base: str,
                  names_embs_path: str):
         
-        with open(f"{ind2name_path}", 'rb') as fp:
+        with open(f"{ind2name_path}", "rb") as fp:
             self.ind2name = pickle.load(fp)
 
-        with open(f"{ind2cat_path}", 'rb') as fp:
+        with open(f"{ind2cat_path}", "rb") as fp:
             self.ind2cat = pickle.load(fp)
 
         self.base = pd.read_csv(path_to_base)
 
         self.cv_model = Model(num_cats=len(self.ind2cat),
-                              num_names=len(self.ind2name)).to(settings.device)
-        self.cv_model.load_state_dict(torch.load(f'{cv_model_wts_path}'))
+                              num_names=len(self.ind2name)).to(settings.DEVICE)
+        self.cv_model.load_state_dict(torch.load(f"{cv_model_wts_path}"))
         self.cv_model.eval()
 
-        self.rubert = SentenceTransformer('cointegrated/rubert-tiny2')
+        self.rubert = SentenceTransformer("cointegrated/rubert-tiny2")
 
         try:
             names, cities, embs = np.load(names_embs_path, allow_pickle=True)
@@ -47,27 +49,25 @@ class Predictor:
 
     @torch.inference_mode()
     def topk_cats_names_by_image(self,
-                                 image: Image,
+                                 image: PIL.Image,
                                  city: str,
                                  k: int = 5) -> tuple[dict, list[dict]]:
-        
         '''
-        Функция находит распределение вероятностей для топ-k категорий достопримечательностий, топ-5 названий мест с координатами
+        Нахождение по входящему изображению распределения вероятностей на top-k категорий достопримечательностей, 
+        top-k названий наиболее похожих достопримечательностей с их координатами
 
-        Параметры: 
-            image (PIL.Image): изображение, отправленное пользователем
-            city (str): город, в котором нужно искать достопримечательность
-            k (int): количество наиболее подходящих категорий изображения для выдачи
+        :param image (PIL.Image): входящее изображение
+        :param city (str): город для поиска похожих названий достопримечательностей
+        :param k (int): ограничение выдачи распределения вероятностей категорий и количества названий похожих достопримечательностей
 
-        Возвращаемое значение:
-            tuple: кортеж, состоящий из словаря вида {<название_достопримечательности>: вероятность} и 
-            списка словарей, каждый из которых имеет ключи Place_name (название достопримечательности), Lon (долгота), Lat (широта)
+        :return: 
+            распределение вероятностей на top-k категорий достопримечательностей, top-k названий наиболее похожих достопримечательностей с их координатами
         '''
         
         temp_base = self.name_emb_base[self.name_emb_base.City == city]
         c_pl_names = temp_base["Name"].unique().tolist()
         
-        processed_image = data_transforms(image).unsqueeze(0).to(settings.device)
+        processed_image = data_transforms(image).unsqueeze(0).to(settings.DEVICE)
         cats_logits, names_logits = self.cv_model(processed_image)
 
         out_topk_cats = cats_logits.topk(k=k)
@@ -83,21 +83,19 @@ class Predictor:
         return (cats_resp, names_resp)
     
 
-    def topk_names_by_text(self,
-                           text: str,
-                           city: str,
-                           k: int = 5) -> list:
-        
+    def topk_images_by_text(self,
+                            text: str,
+                            city: str,
+                            k: int = 5) -> dict:
         '''
-        Функция находит k наиболее похожих названий на входящий текстовый запрос
+        Нахождение top-k наиболее соответствующих изображений достопримечательностей на входящий текстовый запрос
 
-        Параметры:
-            text (str): текстовый запрос
-            city (str): город для поиска похожих достопримечательностей
-            k (int): количество наиболее похожих достопримечательностей для выдачи
+        :param text (str): входящий текстовый запрос
+        :param city (str): город для поиска похожих изображений достопримечательностей на входящий текстовый запрос
+        :param k (int): ограничение выдачи количества похожих изображений достопримечательностей на входящий текстовый запрос
         
-        Возвращаемое значение:
-            список из k наиболее подходящих названий для входящего текстового запроса
+        :return:
+            top-k наиболее похожих изображений достопримечательностей для входящего текстового запроса
         '''
         
         temp_base = self.name_emb_base[self.name_emb_base.City == city]
@@ -114,6 +112,16 @@ class Predictor:
 
         distances, ann = index.search(vector, k=index.ntotal)
         results = pd.DataFrame({'distances': distances[0], 'ann': ann[0]})
-        merged = pd.merge(results, temp_base, left_on='ann', right_index=True)
+        names_list = pd.merge(results, temp_base, left_on='ann', right_index=True)[:k]["Name"].tolist()
+    
+        images_names_dict = {name: (predictor.base[predictor.base.Name == name].sample(frac=1).reset_index().iloc[0]['image'],
+                                    predictor.base[predictor.base.Name == name].iloc[0]['Lon'],
+                                    predictor.base[predictor.base.Name == name].iloc[0]['Lat']) for name in names_list}
 
-        return merged[:k]["Name"].tolist()
+        return images_names_dict
+
+predictor = Predictor(cv_model_wts_path=settings.cv_model_wts_path,
+                      ind2name_path=settings.ind2name_decoder_path,
+                      ind2cat_path=settings.ind2cat_decoder_path,
+                      path_to_base=settings.path_to_base,
+                      names_embs_path=settings.names_embs_path)

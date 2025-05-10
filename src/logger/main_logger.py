@@ -31,6 +31,10 @@ def init_logger():
     root_logger.setLevel(settings.LOG_LEVEL)
     root_logger.addHandler(get_file_handler())
     root_logger.addHandler(get_stream_handler())
+    
+    if not os.path.exists(settings.LOG_FOLDER):
+        os.makedirs(settings.LOG_FOLDER) 
+
     return root_logger
 
 

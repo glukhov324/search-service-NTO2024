@@ -8,7 +8,7 @@ import os
 import base64
 import matplotlib.pyplot as plt
 from loguru import logger
-from config.config import Config
+from src.settings import settings
 
 
 
@@ -33,13 +33,11 @@ class DatasetPrepare:
         self.del_imgs_pth = del_imgs_pth
         self.dataset_name = dataset_name
         self.dataset = pd.DataFrame()
-        self.device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
-        self.model_clip, self.processor = clip.load("ViT-B/32", device=self.device)
+        self.model_clip, self.processor = clip.load("ViT-B/32", device=settings.DEVICE)
     
 
 
     def create_dataset(self) -> None:
-        
         """
         Создание датасета для городов: Екатеринбург, Нижний Новгород, Владимир, Ярославль
         """
@@ -66,13 +64,10 @@ class DatasetPrepare:
 
 
     def _save_figure_deleted_images(self, score_img: dict) -> None:
-
         """
         Сохранение восьми сэмплов удалённых изображений из датасета, имеющих наибольшую вероятность соответствия ключевому запросу для удаления
 
-        Входные параметры:
-            score_img (dict): словарь вида key: (prob, pil_img), key - индекс удалённой строки из датасета, 
-            prob - вероятность соответствия изображения из удалённой строки ключевому запросу для удаления
+        :param score_img (dict): словарь, в котором изображению соотносится вероятность соответствия ключевому запросу для удаления
         """
 
         if not os.path.exists(f"{self.dataset_main_folder}/{self.del_imgs_pth}"):
@@ -96,15 +91,15 @@ class DatasetPrepare:
     def clean_dataset(self,
                       texts: list[str],
                       threshold: float = 0.9) -> None:
-        
         """
-        Очистка датасета при помощи модели clip
-        Удаляем строки из датасета, если изображения в этих строках похожи с текстом на нулевом индексе (ключевым запросом для удаления) 
+        Очистка датасета при помощи модели clip. 
+        Удаление строк из датасета, если изображения в этих строках похожи с текстом ключевого запроса для очистки датасета
         в списке texts более, чем на threshold
 
-        Входные параметры:
-            texts (list[str]): список запросов
-            threshold (float): порог удаления строки из датасета по нулевому запросу из texts
+        texts[0] - ключевой запрос для очистки датасета
+
+        :param texts (list[str]): список запросов
+        :param threshold (float): порог удаления строки из датасета по нулевому запросу из texts
         """
         
         ids_to_delete = []
@@ -134,7 +129,6 @@ class DatasetPrepare:
 
 
     def save_dataset(self) -> None:
-
         """
         Сохранение текущей версии датасета
         """
@@ -143,10 +137,10 @@ class DatasetPrepare:
 
 if __name__ == "__main__":
 
-    dp = DatasetPrepare(df_path=Config.df_path,
-                        del_imgs_pth=Config.del_imgs_pth,
-                        dataset_name=Config.dataset_name,
-                        dataset_main_folder=Config.dataset_main_folder)
+    dp = DatasetPrepare(df_path=settings.df_path,
+                        del_imgs_pth=settings.del_imgs_path,
+                        dataset_name=settings.dataset_name,
+                        dataset_main_folder=settings.dataset_main_folder)
         
     dp.create_dataset()
     dp.clean_dataset(texts=['black and white image', 'multi-colored image'], 
