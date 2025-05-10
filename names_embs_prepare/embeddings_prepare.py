@@ -3,8 +3,8 @@ import pandas as pd
 from tqdm import tqdm
 import numpy as np
 import torch
-from config.config import Config
-from loguru import logger
+from src.settings import settings
+from src.logger.main_logger import logger
 
 
 def encode_names(names: list[str],
@@ -38,7 +38,7 @@ def encode_names(names: list[str],
 if __name__ == "__main__":
 
     ruberttiny2 = SentenceTransformer('cointegrated/rubert-tiny2')
-    df_base = pd.read_csv(Config.path_to_base)
+    df_base = pd.read_csv(settings.path_to_base)
     names = df_base["Name"].unique().tolist() 
     cities = [df_base[df_base.Name == name]['City'].values[0] for name in names]
 
@@ -46,7 +46,7 @@ if __name__ == "__main__":
                            cities=cities,
                            model=ruberttiny2)
     
-    np.save(Config.names_embs_path, (df_embs["Name"].values, 
+    np.save(settings.names_embs_path, (df_embs["Name"].values, 
                                      df_embs["City"].values, 
                                      df_embs["Name_embedding"].values))
 

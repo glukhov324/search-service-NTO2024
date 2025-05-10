@@ -1,6 +1,3 @@
-from src.cv_model.model import Model
-from src.cv_model.data_transforms import data_transforms
-
 import torch
 import pickle
 import faiss
@@ -8,8 +5,11 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 from sentence_transformers import SentenceTransformer
-from loguru import logger
+
+from src.cv_model.model import Model
+from src.cv_model.data_transforms import data_transforms
 from src.settings import settings
+
 
 
 class Predictor:
