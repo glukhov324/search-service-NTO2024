@@ -22,9 +22,9 @@ async def image_predict(image_file: UploadFile,
         data = await image_file.read()
         pil_image = Image.open(io.BytesIO(data)).convert('RGB')
 
-        cats_resp, names_resp = predictor.topk_cats_names_by_image(image=pil_image, city=city)
+        cats_resp, names_coords_resp = predictor.topk_cats_names_by_image(image=pil_image, city=city)
 
-        return (cats_resp, names_resp)
+        return (cats_resp, names_coords_resp)
 
 
 @router.post("/by_text")

@@ -14,19 +14,21 @@ class Settings(BaseSettings):
     TITLE: str = "NTO SEARCH SERVICE"
 
     # Paths settings
-    dataset_name: str ='dataset'
-    dataset_main_folder: str = './dataset_prepare'
-    df_path: str = 'data'
-    del_imgs_path: str ='/plots_deleted_images'
+    PROCESSED_DATASET_NAME: str ='dataset'
+    DATASET_MAIN_FOLDER: str = './dataset_prepare'
+    RAW_DATA_PATH: str = 'data'
+    DEL_IMGS_PATH: str ='/plots_deleted_images'
+    DELETE_IMAGE_THRESHOLD: float = 0.9
 
     # names embeddings settings
-    path_to_base: str = 'src/predictor/train_val.csv'
-    names_embs_path: str = 'src/predictor/names_embeddings.npy'
+    EMBEDDINGS_MODEL_NAME: str = "cointegrated/rubert-tiny2"
+    SEARCH_BASE_PATH: str = 'src/predictor/train_val.csv'
+    NAMES_EMBEDDINGS_PATH: str = 'src/predictor/names_embeddings.npy'
 
     # cv model
-    cv_model_wts_path: str = 'src/cv_model/best_wts_cat_names.pt'
-    ind2name_decoder_path: str = 'src/cv_model/ind2name.pkl'
-    ind2cat_decoder_path: str = 'src/cv_model/ind2cat.pkl'
+    CV_MODEL_WTS_PATH: str = 'src/cv_model/best_wts_cat_names.pt'
+    IND2NAME_DECODER_PATH: str = 'src/cv_model/ind2name.pkl'
+    IND2CAT_DECODER_PATH: str = 'src/cv_model/ind2cat.pkl'
 
     # Logging settings
     LOG_FORMAT: str = f"%(asctime)s - [%(levelname)s] - %(name)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s"

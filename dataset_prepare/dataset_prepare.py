@@ -137,14 +137,14 @@ class DatasetPrepare:
 
 if __name__ == "__main__":
 
-    dp = DatasetPrepare(df_path=settings.df_path,
-                        del_imgs_pth=settings.del_imgs_path,
-                        dataset_name=settings.dataset_name,
-                        dataset_main_folder=settings.dataset_main_folder)
+    dp = DatasetPrepare(df_path=settings.RAW_DATA_PATH,
+                        del_imgs_pth=settings.DEL_IMGS_PATH,
+                        dataset_name=settings.PROCESSED_DATASET_NAME,
+                        dataset_main_folder=settings.DATASET_MAIN_FOLDER)
         
     dp.create_dataset()
     dp.clean_dataset(texts=['black and white image', 'multi-colored image'], 
-                    threshold=0.9)
+                     threshold=settings.DELETE_IMAGE_THRESHOLD)
     dp.clean_dataset(texts=['collage of several images', 'one single image'], 
-                    threshold=0.9)
+                     threshold=settings.DELETE_IMAGE_THRESHOLD)
     dp.save_dataset()

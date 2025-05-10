@@ -5,7 +5,6 @@ import faiss
 import pandas as pd
 import numpy as np
 import PIL
-from PIL import Image
 from sentence_transformers import SentenceTransformer
 
 from src.cv_model.model import Model
@@ -17,25 +16,26 @@ from src.settings import settings
 class Predictor:
     def __init__(self,
                  cv_model_wts_path: str,
-                 ind2name_path: str,
-                 ind2cat_path: str,
-                 path_to_base: str,
+                 ind2name_decoder_path: str,
+                 ind2cat_decoder_path: str,
+                 path_to_search_base: str,
                  names_embs_path: str):
         
-        with open(f"{ind2name_path}", "rb") as fp:
+        with open(f"{ind2name_decoder_path}", "rb") as fp:
             self.ind2name = pickle.load(fp)
 
-        with open(f"{ind2cat_path}", "rb") as fp:
+        with open(f"{ind2cat_decoder_path}", "rb") as fp:
             self.ind2cat = pickle.load(fp)
 
-        self.base = pd.read_csv(path_to_base)
+        self.search_base = pd.read_csv(path_to_search_base)
 
         self.cv_model = Model(num_cats=len(self.ind2cat),
                               num_names=len(self.ind2name)).to(settings.DEVICE)
         self.cv_model.load_state_dict(torch.load(f"{cv_model_wts_path}"))
         self.cv_model.eval()
 
-        self.rubert = SentenceTransformer("cointegrated/rubert-tiny2")
+        self.rubert = SentenceTransformer(settings.EMBEDDINGS_MODEL_NAME,
+                                          device=settings.DEVICE)
 
         try:
             names, cities, embs = np.load(names_embs_path, allow_pickle=True)
@@ -78,9 +78,11 @@ class Predictor:
         cats_resp = {cats[i]: cats_probs[i] for i in range(len(cats))}
 
         names = [self.ind2name[int(i)] for i in out_topk_names.indices.cpu()[0] if self.ind2name[int(i)] in c_pl_names][:k]
-        names_resp = [{"Place_name": name, "Lon": self.base[self.base.Name == name]['Lon'].values[0], "Lat": self.base[self.base.Name == name]['Lat'].values[0]} for name in names]
+        names_coords_resp = [{"Place_name": name, 
+                       "Lon": self.search_base[self.search_base.Name == name]['Lon'].values[0], 
+                       "Lat": self.search_base[self.search_base.Name == name]['Lat'].values[0]} for name in names]
 
-        return (cats_resp, names_resp)
+        return (cats_resp, names_coords_resp)
     
 
     def topk_images_by_text(self,
@@ -114,14 +116,14 @@ class Predictor:
         results = pd.DataFrame({'distances': distances[0], 'ann': ann[0]})
         names_list = pd.merge(results, temp_base, left_on='ann', right_index=True)[:k]["Name"].tolist()
     
-        images_names_dict = {name: (predictor.base[predictor.base.Name == name].sample(frac=1).reset_index().iloc[0]['image'],
-                                    predictor.base[predictor.base.Name == name].iloc[0]['Lon'],
-                                    predictor.base[predictor.base.Name == name].iloc[0]['Lat']) for name in names_list}
+        images_names_dict = {name: (predictor.search_base[predictor.search_base.Name == name].sample(frac=1).reset_index().iloc[0]['image'],
+                                    predictor.search_base[predictor.search_base.Name == name].iloc[0]['Lon'],
+                                    predictor.search_base[predictor.search_base.Name == name].iloc[0]['Lat']) for name in names_list}
 
         return images_names_dict
 
-predictor = Predictor(cv_model_wts_path=settings.cv_model_wts_path,
-                      ind2name_path=settings.ind2name_decoder_path,
-                      ind2cat_path=settings.ind2cat_decoder_path,
-                      path_to_base=settings.path_to_base,
-                      names_embs_path=settings.names_embs_path)
+predictor = Predictor(cv_model_wts_path=settings.CV_MODEL_WTS_PATH,
+                      ind2name_decoder_path=settings.IND2NAME_DECODER_PATH,
+                      ind2cat_decoder_path=settings.IND2CAT_DECODER_PATH,
+                      path_to_search_base=settings.SEARCH_BASE_PATH,
+                      names_embs_path=settings.NAMES_EMBEDDINGS_PATH)
