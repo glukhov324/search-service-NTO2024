@@ -9,6 +9,7 @@ import numpy as np
 from PIL import Image
 from sentence_transformers import SentenceTransformer
 from loguru import logger
+from src.settings import settings
 
 
 class Predictor:
@@ -27,10 +28,8 @@ class Predictor:
 
         self.base = pd.read_csv(path_to_base)
 
-        self.device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
-
         self.cv_model = Model(num_cats=len(self.ind2cat),
-                              num_names=len(self.ind2name)).to(self.device)
+                              num_names=len(self.ind2name)).to(settings.device)
         self.cv_model.load_state_dict(torch.load(f'{cv_model_wts_path}'))
         self.cv_model.eval()
 
@@ -68,7 +67,7 @@ class Predictor:
         temp_base = self.name_emb_base[self.name_emb_base.City == city]
         c_pl_names = temp_base["Name"].unique().tolist()
         
-        processed_image = data_transforms(image).unsqueeze(0).to(self.device)
+        processed_image = data_transforms(image).unsqueeze(0).to(settings.device)
         cats_logits, names_logits = self.cv_model(processed_image)
 
         out_topk_cats = cats_logits.topk(k=k)

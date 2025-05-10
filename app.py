@@ -1,18 +1,18 @@
 from fastapi import FastAPI, UploadFile
 from fastapi.responses import JSONResponse
 from src.predictor.predictor import Predictor
-from config.config import Config
+from src.settings import settings
 
 from PIL import Image
 import io
 
 app = FastAPI()
 
-predictor = Predictor(cv_model_wts_path=Config.cv_model_wts_path,
-                      ind2name_path=Config.ind2name_path,
-                      ind2cat_path=Config.ind2cat_path,
-                      path_to_base=Config.path_to_base,
-                      names_embs_path=Config.names_embs_path)
+predictor = Predictor(cv_model_wts_path=settings.cv_model_wts_path,
+                      ind2name_path=settings.ind2name_decoder_path,
+                      ind2cat_path=settings.ind2cat_decoder_path,
+                      path_to_base=settings.path_to_base,
+                      names_embs_path=settings.names_embs_path)
 
 @app.get('/')
 def service_start():

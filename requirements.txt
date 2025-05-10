@@ -19,3 +19,4 @@ transformers==4.45.2
 ftfy==6.3.1
 regex==2024.11.6
 tqdm==4.67.1
+pydantic_settings==2.9.1
