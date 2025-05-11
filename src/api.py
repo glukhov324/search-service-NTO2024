@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, UploadFile, Form
 from fastapi.responses import JSONResponse
 from PIL import Image
 import io
@@ -21,7 +21,7 @@ responses = {
 
 @router.post("/by_image", tags=["SEARCH"], response_model=SearchByImageResult, responses={**responses})
 async def cats_sim_names_by_img(image_file: UploadFile,
-                                city: str = settings.DEFAULT_CITY):
+                                city: str = Form(settings.DEFAULT_CITY)):
         
         if city not in settings.USE_CITIES:
                 return JSONResponse(status_code=404, 
@@ -41,12 +41,12 @@ async def cats_sim_names_by_img(image_file: UploadFile,
 
 
 @router.post("/by_text", tags=["SEARCH"], response_model=SearchByTextResult, responses={**responses})
-async def sim_imgs_by_text(text: str,
-                       city: str = settings.DEFAULT_CITY):
+async def sim_imgs_by_text(text: str = Form(...),
+                           city: str = Form(settings.DEFAULT_CITY)):
         
         if city not in settings.USE_CITIES:
                 return JSONResponse(status_code=404, 
-                                content={"message": f"Указанного города нет в списке: {settings.USE_CITIES}"})
+                                    content={"message": f"Указанного города нет в списке: {settings.USE_CITIES}"})
         
         logger.info("Start searching images of similar sights")
 
