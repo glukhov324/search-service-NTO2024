@@ -10,6 +10,7 @@ from sentence_transformers import SentenceTransformer
 from src.cv_model import Model, data_transforms
 from src.settings import settings
 from src.names_embeddings import get_names_embeddings
+from src.schemas import SearchByImageResult, SearchByTextResult
 
 
 
@@ -54,7 +55,7 @@ class Predictor:
     def topk_cats_names_by_image(self,
                                  image: PIL.Image,
                                  city: str,
-                                 k: int = settings.TOPK) -> tuple[dict, list[dict]]:
+                                 k: int = settings.TOPK) -> SearchByImageResult:
         '''
         Нахождение по входящему изображению распределения вероятностей на top-k категорий достопримечательностей, 
         top-k названий наиболее похожих достопримечательностей с их координатами
@@ -78,20 +79,34 @@ class Predictor:
 
         cats_probs = out_topk_cats.values.softmax(dim=-1).cpu().tolist()[0]
         cats = [self.ind2cat[int(i)] for i in out_topk_cats.indices.cpu()[0]]
-        cats_resp = {cats[i]: cats_probs[i] for i in range(len(cats))}
+        cats_probs_resp = [{"category": cats[i],
+                            "probability": cats_probs[i]} for i in range(len(cats))]
 
         names = [self.ind2name[int(i)] for i in out_topk_names.indices.cpu()[0] if self.ind2name[int(i)] in c_pl_names][:k]
-        names_coords_resp = [{"Place_name": name, 
-                       "Lon": self.search_base[self.search_base.Name == name]['Lon'].values[0], 
-                       "Lat": self.search_base[self.search_base.Name == name]['Lat'].values[0]} for name in names]
-
-        return (cats_resp, names_coords_resp)
+        names_coords_resp = [
+            {
+                "sight_name": name, 
+                "lon": self.search_base[self.search_base.Name == name]['Lon'].values[0], 
+                "lat": self.search_base[self.search_base.Name == name]['Lat'].values[0]
+            } for name in names
+            ]
+        
+        response = {
+            "cats_probs": cats_probs_resp,
+            "names_coords": names_coords_resp
+        }
     
+
+        return response
+    
+    pd.DataFrame({
+
+    })
 
     def topk_images_by_text(self,
                             text: str,
                             city: str,
-                            k: int = settings.TOPK) -> dict:
+                            k: int = settings.TOPK) -> SearchByTextResult:
         '''
         Нахождение top-k наиболее соответствующих изображений достопримечательностей на входящий текстовый запрос
 
@@ -119,11 +134,18 @@ class Predictor:
         results = pd.DataFrame({'distances': distances[0], 'ann': ann[0]})
         names_list = pd.merge(results, temp_base, left_on='ann', right_index=True)[:k]["Name"].tolist()
     
-        images_names_dict = {name: (self.search_base[self.search_base.Name == name].sample(frac=1).reset_index().iloc[0]['image'],
-                                    self.search_base[self.search_base.Name == name].iloc[0]['Lon'],
-                                    self.search_base[self.search_base.Name == name].iloc[0]['Lat']) for name in names_list}
-
-        return images_names_dict
+        images_names_dict = [
+            {
+                "sight_name": name,
+                "lon": self.search_base[self.search_base.Name == name].iloc[0]['Lon'],
+                "lat": self.search_base[self.search_base.Name == name].iloc[0]['Lat'],
+                "encoded_img": self.search_base[self.search_base.Name == name].sample(frac=1).reset_index().iloc[0]['image']
+            } for name in names_list
+        ]
+        response = {
+            "result": images_names_dict
+        }
+        return response
 
 
 
