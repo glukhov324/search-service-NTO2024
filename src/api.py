@@ -11,7 +11,7 @@ from src.logger import logger
 router = APIRouter(prefix="/search")
 
 
-@router.post("/by_image")
+@router.post("/by_image", tags=["SEARCH"])
 async def cats_sim_names_by_img(image_file: UploadFile,
                                 city: str = settings.DEFAULT_CITY) -> tuple[dict, list[dict]]:
         
@@ -32,7 +32,7 @@ async def cats_sim_names_by_img(image_file: UploadFile,
         return (cats_resp, names_coords_resp)
 
 
-@router.post("/by_text")
+@router.post("/by_text", tags=["SEARCH"])
 async def sim_imgs_by_text(text: str,
                        city: str = settings.DEFAULT_CITY) -> dict:
         
