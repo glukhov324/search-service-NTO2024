@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  search-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: search-service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data   # ← Здесь сохраняются данные на хосте в папке ./data
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: on-failure
