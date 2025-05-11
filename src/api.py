@@ -33,7 +33,7 @@ async def cats_sim_names_by_img(image_file: UploadFile,
 
 
 @router.post("/by_text")
-def sim_imgs_by_text(text: str,
+async def sim_imgs_by_text(text: str,
                        city: str = settings.DEFAULT_CITY) -> dict:
         
         if city not in settings.USE_CITIES:
