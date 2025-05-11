@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 
-from src.logger.main_logger import logger
+from src.logger import logger
 
 
 async def handle_exceptions_middleware(request: Request, call_next):

@@ -4,7 +4,7 @@ from PIL import Image
 import io
 
 from src.settings import settings
-from src.predictor.predictor import predictor
+from src.predictor import main_predictor
 
 
 router = APIRouter(prefix="/search")
@@ -22,7 +22,8 @@ async def image_predict(image_file: UploadFile,
         data = await image_file.read()
         pil_image = Image.open(io.BytesIO(data)).convert('RGB')
 
-        cats_resp, names_coords_resp = predictor.topk_cats_names_by_image(image=pil_image, city=city)
+        cats_resp, names_coords_resp = main_predictor.topk_cats_names_by_image(image=pil_image, 
+                                                                               city=city)
 
         return (cats_resp, names_coords_resp)
 
@@ -35,7 +36,7 @@ def text_predict(text: str,
                 return JSONResponse(status_code=404, 
                                     content={"message": f"Указанного города нет в списке: {settings.USE_CITIES}"})
         
-        images_names_dict = predictor.topk_images_by_text(text=text,
-                                                          city=city)
+        images_names_dict = main_predictor.topk_images_by_text(text=text,
+                                                               city=city)
 
         return images_names_dict

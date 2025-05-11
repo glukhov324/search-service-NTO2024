@@ -1,17 +1,15 @@
-import PIL.Image
+import pandas as pd
+import numpy as np
+import os
 import torch
 import pickle
 import faiss
-import pandas as pd
-import numpy as np
 import PIL
-import os
 from sentence_transformers import SentenceTransformer
 
-from src.cv_model.model import Model
-from src.cv_model.data_transforms import data_transforms
+from src.cv_model import Model, data_transforms
 from src.settings import settings
-from src.names_embeddings.embeddings_prepare import get_names_embeddings
+from src.names_embeddings import get_names_embeddings
 
 
 
@@ -121,9 +119,9 @@ class Predictor:
         results = pd.DataFrame({'distances': distances[0], 'ann': ann[0]})
         names_list = pd.merge(results, temp_base, left_on='ann', right_index=True)[:k]["Name"].tolist()
     
-        images_names_dict = {name: (predictor.search_base[predictor.search_base.Name == name].sample(frac=1).reset_index().iloc[0]['image'],
-                                    predictor.search_base[predictor.search_base.Name == name].iloc[0]['Lon'],
-                                    predictor.search_base[predictor.search_base.Name == name].iloc[0]['Lat']) for name in names_list}
+        images_names_dict = {name: (self.search_base[self.search_base.Name == name].sample(frac=1).reset_index().iloc[0]['image'],
+                                    self.search_base[self.search_base.Name == name].iloc[0]['Lon'],
+                                    self.search_base[self.search_base.Name == name].iloc[0]['Lat']) for name in names_list}
 
         return images_names_dict
 

@@ -1,0 +1,1 @@
+from src.names_embeddings.embeddings_prepare import get_names_embeddings

@@ -3,7 +3,7 @@ import pandas as pd
 from tqdm import tqdm
 import numpy as np
 from src.settings import settings
-from src.logger.main_logger import logger
+from src.logger import logger
 
 
 def get_names_embeddings(search_base: pd.DataFrame,
