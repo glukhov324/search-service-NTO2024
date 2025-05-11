@@ -7,13 +7,13 @@ import io
 import os
 import base64
 import matplotlib.pyplot as plt
-from loguru import logger
+
+from src.logger import logger
 from src.settings import settings
 
 
 
 def base64_to_pil_image(image_base64: str) -> PIL.Image:
-
     """
     Конвертация изображения, закодированного в base64, в PIL.Image
     """
@@ -70,21 +70,21 @@ class DatasetPrepare:
         :param score_img (dict): словарь, в котором изображению соотносится вероятность соответствия ключевому запросу для удаления
         """
 
-        if not os.path.exists(f"{self.dataset_main_folder}/{self.del_imgs_pth}"):
-            os.mkdir(f"{self.dataset_main_folder}/{self.del_imgs_pth}")
+        if not os.path.exists(f"{self.del_imgs_pth}"):
+            os.mkdir(f"{self.del_imgs_pth}")
 
         short_imgs_list = [t[1][1] for t in sorted(score_img.items(), key=lambda x:(x[1][0]), reverse=True)][:8]
 
         plt.figure(figsize=(16, 8))
 
         if len(short_imgs_list) >= 8:
-            name = len(os.listdir(f"{self.dataset_main_folder}/{self.del_imgs_pth}"))
+            name = len(os.listdir(f"{self.del_imgs_pth}"))
             for i in range(4):
                 plt.subplot(2, 4, i+1)
                 plt.imshow(short_imgs_list[i])
                 plt.subplot(2, 4, i+5)
                 plt.imshow(short_imgs_list[i+4])
-            plt.savefig(f"{self.dataset_main_folder}/{self.del_imgs_pth}/plot_{name}.png")
+            plt.savefig(f"{self.del_imgs_pth}/plot_{name}.png")
 
 
     @torch.inference_mode()
@@ -110,8 +110,8 @@ class DatasetPrepare:
         for i in tqdm(range(len(self.dataset))):
 
             pil_img = base64_to_pil_image(self.dataset.iloc[i]['image'])
-            prepoc_img = self.processor(pil_img).unsqueeze(0).to(self.device)
-            tokenized_texts = clip.tokenize(texts).to(self.device)
+            prepoc_img = self.processor(pil_img).unsqueeze(0).to(settings.DEVICE)
+            tokenized_texts = clip.tokenize(texts).to(settings.DEVICE)
 
             logits_per_image, _ = self.model_clip(prepoc_img, tokenized_texts)
             probs = logits_per_image.softmax(dim=-1).detach().cpu().numpy()
@@ -120,7 +120,7 @@ class DatasetPrepare:
                 ids_to_delete.append(i)
                 score_img[i] = (probs[0][0], pil_img)
         
-        self._save_figure_deleted_images(score_img=score_img)
+        self._save_figure_deleted_images(score_img=score_img) 
 
         self.dataset = self.dataset.drop(ids_to_delete, axis=0)
         self.dataset = self.dataset.reset_index(drop=True)
@@ -133,18 +133,9 @@ class DatasetPrepare:
         Сохранение текущей версии датасета
         """
 
-        self.dataset.to_csv(f"{self.dataset_main_folder}/{self.dataset_name}.csv", index=False)
-
-if __name__ == "__main__":
-
-    dp = DatasetPrepare(df_path=settings.RAW_DATA_PATH,
-                        del_imgs_pth=settings.DEL_IMGS_PATH,
-                        dataset_name=settings.PROCESSED_DATASET_NAME,
-                        dataset_main_folder=settings.DATASET_MAIN_FOLDER)
-        
-    dp.create_dataset()
-    dp.clean_dataset(texts=['black and white image', 'multi-colored image'], 
-                     threshold=settings.DELETE_IMAGE_THRESHOLD)
-    dp.clean_dataset(texts=['collage of several images', 'one single image'], 
-                     threshold=settings.DELETE_IMAGE_THRESHOLD)
-    dp.save_dataset()
+        self.dataset.to_csv(f"{self.dataset_main_folder}/{self.dataset_name}", index=False)
+    
+dp = DatasetPrepare(df_path=settings.RAW_DATA_PATH,
+                    del_imgs_pth=settings.DEL_IMGS_PATH,
+                    dataset_name=settings.PROCESSED_DATASET_NAME,
+                    dataset_main_folder=settings.DATASET_MAIN_FOLDER)

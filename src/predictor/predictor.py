@@ -9,8 +9,10 @@ from sentence_transformers import SentenceTransformer
 
 from src.cv_model import Model, data_transforms
 from src.settings import settings
+from src.dataset_prepare import dp
 from src.names_embeddings import get_names_embeddings
 from src.schemas import SearchByImageResult, SearchByTextResult
+from src.logger import logger
 
 
 
@@ -28,6 +30,14 @@ class Predictor:
 
         with open(f"{ind2cat_decoder_path}", "rb") as fp:
             self.ind2cat = pickle.load(fp)
+
+        if not os.path.exists(path_to_search_base):
+            dp.create_dataset()
+            dp.clean_dataset(texts=['black and white image', 'multi-colored image'], 
+                            threshold=settings.DELETE_IMAGE_THRESHOLD)
+            dp.clean_dataset(texts=['collage of several images', 'one single image'], 
+                            threshold=settings.DELETE_IMAGE_THRESHOLD)
+            dp.save_dataset()
 
         self.search_base = pd.read_csv(path_to_search_base)
 
@@ -96,12 +106,7 @@ class Predictor:
             "names_coords": names_coords_resp
         }
     
-
         return response
-    
-    pd.DataFrame({
-
-    })
 
     def topk_images_by_text(self,
                             text: str,

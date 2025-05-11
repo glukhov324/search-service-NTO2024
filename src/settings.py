@@ -14,15 +14,15 @@ class Settings(BaseSettings):
     TITLE: str = "NTO SEARCH SERVICE"
 
     # Paths settings
-    PROCESSED_DATASET_NAME: str ='dataset'
-    DATASET_MAIN_FOLDER: str = './dataset_prepare'
-    RAW_DATA_PATH: str = 'data'
-    DEL_IMGS_PATH: str ='/plots_deleted_images'
+    PROCESSED_DATASET_NAME: str ='dataset.csv'
+    DATASET_MAIN_FOLDER: str = 'src/dataset_prepare'
+    RAW_DATA_PATH: str = 'raw_data'
+    DEL_IMGS_PATH: str ='src/dataset_prepare/plots_deleted_images'
     DELETE_IMAGE_THRESHOLD: float = 0.9
 
     # names embeddings settings
     EMBEDDINGS_MODEL_NAME: str = "cointegrated/rubert-tiny2"
-    SEARCH_BASE_PATH: str = 'src/predictor/train_val.csv'
+    SEARCH_BASE_PATH: str = 'src/dataset_prepare/dataset.csv'
     NAMES_EMBEDDINGS_PATH: str = 'src/names_embeddings/names_embeddings.npy'
 
     # cv model
