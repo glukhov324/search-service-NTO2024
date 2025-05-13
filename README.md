@@ -38,7 +38,7 @@ python version - 3.10
 docker compose up --build
 ```
 
-документация сервиса будет доступна [здесь] (http://localhost:8000/docs)
+документация сервиса будет доступна [здесь](http://localhost:8000/docs)
 
 ## Демо
 

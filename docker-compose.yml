@@ -9,7 +9,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./data:/app/data   # ← Здесь сохраняются данные на хосте в папке ./data
+      - ./data:/app/data
     deploy:
       resources:
         reservations:
